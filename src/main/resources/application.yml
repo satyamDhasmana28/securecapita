@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: securecapita
+  datasource:
+    url: jdbc:mysql://learning01.c38kwkm8ixys.ap-south-1.rds.amazonaws.com:3306/securecapital
+    username: root
+    password: Mo9871682353
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 8222
