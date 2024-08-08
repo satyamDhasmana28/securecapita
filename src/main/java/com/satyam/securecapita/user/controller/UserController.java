@@ -6,6 +6,7 @@ import com.satyam.securecapita.user.RequestDto.UserRegistrationRequestDto;
 import com.satyam.securecapita.user.serviceImpl.UserValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,10 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserValidator userValidator;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
-    public UserController(UserValidator userValidator) {
+    public UserController(UserValidator userValidator ,final ApplicationEventPublisher applicationEventPublisher) {
         this.userValidator = userValidator;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     //have to complete this
@@ -31,10 +34,11 @@ public class UserController {
         try{
 //            validation the request json body
             this.userValidator.ValidateForUserRegistration(dto);
-
+//             publish a user registeration event
 
         } catch(RequestValidationException rve){
             response = rve.getMessage();
+            return new ResponseEntity<>(response, HttpStatus.valueOf(400));
         } catch(Exception e){
             log.error("Exception in registerUser "+e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.valueOf(400));
