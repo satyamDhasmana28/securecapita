@@ -1,7 +1,8 @@
 package com.satyam.securecapita.user.service;
 
 import com.satyam.securecapita.user.RequestDto.UserRegistrationRequestDto;
+import com.satyam.securecapita.user.model.User;
 
 public interface UserWriteService {
-    public String doUserRegisteration(UserRegistrationRequestDto requestDto);
+    public User doUserRegisteration(UserRegistrationRequestDto requestDto);
 }

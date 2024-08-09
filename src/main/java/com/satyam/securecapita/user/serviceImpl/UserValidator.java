@@ -33,11 +33,11 @@ public class UserValidator {
             throw new RequestValidationException("username is mandatory.");
         } else if (dto.getPassword().isBlank()) {
             throw new RequestValidationException("password is mandatory.");
-        } else if(isValidEmail(dto.getUsername())){
+        } else if(!isValidEmail(dto.getUsername())){
             throw new RequestValidationException("invalid email id.");
         } else if (this.userRepoWrapper.existsByEmailId(dto.getUsername())){
             throw new UserAlreadyRegisteredException("email id already registered.");
-        }else if(isValidatedPassword(dto.getPassword())){
+        }else if(!isValidatedPassword(dto.getPassword())){
             throw new PasswordViolationException("password must be Minimum 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character");
         }
         return ApplicationConstants.VALIDATED;

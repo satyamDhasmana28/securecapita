@@ -1,3 +1,6 @@
+server:
+  port: 8222
+
 spring:
   application:
     name: securecapita
@@ -10,6 +13,14 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
-
-server:
-  port: 8222
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: satyam.dhasmana@gmail.com
+    password: elgd ywop vwbs omzp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
