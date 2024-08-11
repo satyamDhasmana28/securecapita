@@ -5,6 +5,8 @@ import com.satyam.securecapita.user.service.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public class UserRepositoryWrapper {
     private final UserRepository repo;
@@ -18,8 +20,13 @@ public class UserRepositoryWrapper {
         return this.repo.save(user);
     }
 
+//    return true if user registered or email-verification not success
     public boolean existsByEmailId(String emailId){
         return this.repo.existsByEmailIdIgnoreCase(emailId);
+    }
+
+    public Optional<User> findByEmailId(String email){
+        return this.repo.findByEmailIdIgnoreCase(email);
     }
 
 }

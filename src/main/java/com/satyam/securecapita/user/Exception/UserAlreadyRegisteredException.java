@@ -3,7 +3,7 @@ package com.satyam.securecapita.user.Exception;
 import lombok.Getter;
 
 @Getter
-public class UserAlreadyRegisteredException extends RuntimeException{
+public class UserAlreadyRegisteredException extends Exception{
     private String message;
 
     public UserAlreadyRegisteredException(String message) {

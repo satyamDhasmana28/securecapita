@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 @Entity(name = "m_users")
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -24,18 +23,22 @@ public class User implements UserDetails {
     @Column(name = "user_id")
     private Long id;
 
+    @Setter
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
+    @Setter
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "email_id", nullable = false)
+    @Column(name = "email_id", nullable = false, unique = true)
     private String emailId;
 
+    @Setter
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Setter
     @ManyToMany(fetch = FetchType.EAGER , cascade = CascadeType.ALL)
     @JoinTable(
             name = "m_user_roles",
@@ -46,21 +49,26 @@ public class User implements UserDetails {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @Setter
     @Column(name = "last_time_password_updated")
     private LocalDateTime lastTimePasswordUpdated;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Setter
     @Column(name = "is_login")
     private boolean isLogin;
 
+    @Setter
     @Column(name = "credentials_non_expired")
     private boolean credentialsNonExpired;
 
+    @Setter
     @Column(name = "enabled",columnDefinition = "boolean default false")
-    private boolean enabled;
+    private boolean enabled; // for email-verification
 
+    @Setter
     @Column(name = "last_login_failed")
     private LocalDateTime lastLoginFailed;
 
@@ -95,5 +103,13 @@ public class User implements UserDetails {
     @Override
     public boolean isAccountNonLocked() {
         return false;
+    }
+
+    public boolean addRole(Role role){
+        return this.roles.add(role);
+    }
+
+    public boolean removeRole(Role role){
+        return this.roles.remove(role);
     }
 }
