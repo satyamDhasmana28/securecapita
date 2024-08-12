@@ -1,45 +1,58 @@
 package com.satyam.securecapita.infrastructure.security;
 
+import com.satyam.securecapita.infrastructure.filters.RequestLoggingFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig  /*extends WebSecurityConfigurerAdapter*/ {
+
+    private final ApplicationUserDetailsService userDetailsService;
+
+    @Autowired
+    public SecurityConfig(ApplicationUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
-    public SecurityFilterChain securityFilterChain(HttpSecurity http){
-        return null;
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+
+        return http
+                .csrf().disable()  // Disabling CSRF (Enable it if needed)
+                .cors().disable()  // Disabling CORS (Enable it if needed)
+                .authorizeRequests(authorize -> authorize
+                        .antMatchers("/securecapita/api/v1/register/**").permitAll()  // Public APIs
+                        .antMatchers("/securecapita/api/v1/authenticate/**").permitAll()
+                        .antMatchers("/securecapita/api/v1/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")  // Role-based APIs
+                        .anyRequest().hasAuthority("ROLE_SUPER_USER")  // SuperUser access
+                ).addFilterBefore(new RequestLoggingFilter(), UsernamePasswordAuthenticationFilter.class) // request logging filter
+                .formLogin(withDefaults())  // Default login form
+                .userDetailsService(userDetailsService)
+                .build();
     }
 
-//    @Override
-//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//        auth
-//                .inMemoryAuthentication()
-//                .withUser("satyam")
-//                .password(passwordEncoder().encode("Test@1234"))
-//                .roles("USER");
-//    }
-//
-//    @Override
-//    protected void configure(HttpSecurity http) throws Exception {
-//        http
-//                .csrf().disable() // Disable CSRF for simplicity in this example
-//                .authorizeRequests()
-//                .anyRequest().authenticated()
-//                .and()
-//                .httpBasic(); // Use HTTP Basic Authentication
-//    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+
 
 }

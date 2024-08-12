@@ -1,7 +1,7 @@
 package com.satyam.securecapita.infrastructure.constants;
 
 public class ApplicationConstants {
-    public static final String BASE_PATH = "securecapita/api/v1";
+    public static final String BASE_PATH = "/securecapita/api/v1";
     public static final String SUCCESS = "SUCCESS";
 
     public static final String FAILURE = "FAILURE";

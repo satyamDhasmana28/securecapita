@@ -5,6 +5,7 @@ import com.satyam.securecapita.user.model.User;
 import com.satyam.securecapita.user.service.TokenVerificationRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -22,6 +24,9 @@ import java.util.Base64;
 public class UserRegistrationCompleteEventListener implements ApplicationListener<UserRegistrationCompleteEvent> {
 
     private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String supportGmail;
     private final TokenVerificationRepository tokenVerificationRepository;
 
     @Autowired
@@ -61,13 +66,14 @@ public class UserRegistrationCompleteEventListener implements ApplicationListene
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
+            helper.setFrom(supportGmail,"Secure Capital");
             helper.setTo(user.getEmailId()); // receiver emaid id
             helper.setSubject(subject);
             helper.setText(message, true); // The second argument indicates that the content is HTML
 
             // Send the email
             mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
+        } catch (MessagingException | UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage());
         }
     }
