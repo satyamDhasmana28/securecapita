@@ -1,6 +1,7 @@
 package com.satyam.securecapita.user.controller;
 
 import com.satyam.securecapita.infrastructure.constants.ApplicationConstants;
+import com.satyam.securecapita.infrastructure.data.ApplicationResponse;
 import com.satyam.securecapita.infrastructure.events.UserRegistrationCompleteEvent;
 import com.satyam.securecapita.user.Exception.ApplicationException;
 import com.satyam.securecapita.user.Exception.PasswordViolationException;
@@ -23,6 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -44,8 +46,9 @@ public class UserController {
     }
 
     @PostMapping("register")
-    public ResponseEntity<String> registerUser(@RequestBody(required = false) UserRegistrationRequestDto dto, final HttpServletRequest httpServletRequest){
-        String response=ApplicationConstants.SOMETHNG_WENT_WRONG;
+    public ResponseEntity<ApplicationResponse<String>> registerUser(@RequestBody(required = false) UserRegistrationRequestDto dto, final HttpServletRequest httpServletRequest){
+        String message=ApplicationConstants.SOMETHING_WENT_WRONG_MSG;
+        ApplicationResponse applicationResponse =ApplicationResponse.getFailureResponse(null,400,message);
         try{
             User savedUser =null;
 //            validation the request json body
@@ -54,57 +57,66 @@ public class UserController {
             savedUser = this.userWriteService.doUserRegisteration(dto);
 //             publish a user registration complete event
             this.applicationEventPublisher.publishEvent(new UserRegistrationCompleteEvent(savedUser,this.createVerificationUrl(httpServletRequest)));
-            response = "SUCCESS! Please, check your email to complete your registration.";
+            message = "SUCCESS! Please, check your email to complete your registration.";
+            applicationResponse =ApplicationResponse.getSuccessResponse(null,200,message);
         } catch(RequestValidationException rve){
-            response = rve.getMessage();
-            return new ResponseEntity<>(response, HttpStatus.valueOf(400));
+            message = rve.getMessage();
+            applicationResponse = ApplicationResponse.getFailureResponse(null,400,message);
         } catch (PasswordViolationException pve){
-            response = pve.getMessage();
-            return new ResponseEntity<>(response, HttpStatus.valueOf(400));
+            message = pve.getMessage();
+            applicationResponse = ApplicationResponse.getFailureResponse(null,400,message);
         } catch (UserAlreadyRegisteredException e){
-            return new ResponseEntity<>(e.getMessage() , HttpStatus.BAD_REQUEST);
+            message = e.getMessage();
+            applicationResponse = ApplicationResponse.getFailureResponse(null,400,message);
         } catch(Exception e){
             log.error("Exception in registerUser "+e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(400));
         }
 
-        return new ResponseEntity<>(response,HttpStatus.valueOf(200));
+        return new ResponseEntity<>(applicationResponse,HttpStatus.valueOf(applicationResponse.getStatusCode()));
     }
 
     @GetMapping("register/verifyEmail")
-    public ResponseEntity<String> verifyEmail(@RequestParam String token){
-        String response = ApplicationConstants.SOMETHNG_WENT_WRONG;
+    public ResponseEntity<ApplicationResponse<String>> verifyEmail(@RequestParam String token){
+        String message = ApplicationConstants.SOMETHING_WENT_WRONG_MSG;
+        ApplicationResponse applicationResponse =ApplicationResponse.getFailureResponse(null,400,message);
         try {
             if(token.isBlank()){
-                return new ResponseEntity<>("blank token found.",HttpStatus.NOT_ACCEPTABLE);
+                return new ResponseEntity<>(ApplicationResponse.getFailureResponse(null,400,"Invalid token. please try again."),HttpStatus.valueOf(400));
             }
-            response = this.userWriteService.verifyEmailUsingToken(token);
-            if(response.equals("email verification success.")){
-                return new ResponseEntity<>(response,HttpStatus.OK);
+            message = this.userWriteService.verifyEmailUsingToken(token);
+            if(message.equals("email verification success.")){
+                return new ResponseEntity<>(ApplicationResponse.getSuccessResponse(null,200,message),HttpStatus.valueOf(200));
             }else{
-                return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(ApplicationResponse.getFailureResponse(null,400,message),HttpStatus.valueOf(400));
             }
 
         } catch (Exception e){
             log.error("Exception in /verifyEmail "+e.getMessage());
         }
-        return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ApplicationResponse.getFailureResponse(message),HttpStatus.valueOf(400));
     }
 
     @PostMapping("authenticate")
-    public ResponseEntity<AuthenticatedUserData> authenticate(@RequestBody(required = false) LoginRequestData data){
+    public ResponseEntity<ApplicationResponse<AuthenticatedUserData>> authenticate(@RequestBody(required = false) LoginRequestData data){
         AuthenticatedUserData authenticatedUserData = null;
         try{
+            if(Objects.isNull(data) || Objects.isNull(data.getUsername()) || Objects.isNull(data.getPassword())){
+                throw new ApplicationException("Username and password is mandatory.");
+            }
             authenticatedUserData = this.authenticationService.authenticate(data.getUsername(), data.getPassword());
+            if(Objects.isNull(authenticatedUserData))
+                throw new RuntimeException("authenticatedUserData is null");
         } catch (Exception e){
             if(e instanceof ApplicationException){
-                return new ResponseEntity<>();
+                return new ResponseEntity<>(ApplicationResponse.getFailureResponse(null,400,e.getMessage()),HttpStatus.valueOf(400));
             }else if(e instanceof AuthenticationException){
-                return new ResponseEntity<>(AuthenticatedUserData.builder().errorMessage(e.getMessage()).build() ,HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(ApplicationResponse.getFailureResponse(null,401,"Invalid credentials.") ,HttpStatus.UNAUTHORIZED);
+            }else{
+                log.error("Exception in /authenticate : {}", e.getMessage());
+                return new ResponseEntity<>(ApplicationResponse.getFailureResponse(null,400,ApplicationConstants.SOMETHING_WENT_WRONG_MSG) ,HttpStatus.BAD_REQUEST);
             }
-
         }
-        return new ResponseEntity<>(authenticatedUserData,HttpStatus.OK);
+        return new ResponseEntity<>(ApplicationResponse.getSuccessResponse(authenticatedUserData,200,new StringBuilder().append("Welcome ").append(authenticatedUserData.getFirstName()).append("!").toString()),HttpStatus.OK);
     }
 
     private String createVerificationUrl(HttpServletRequest httpServletRequest){

@@ -72,6 +72,11 @@ public class User implements UserDetails {
     @Column(name = "last_login_failed")
     private LocalDateTime lastLoginFailed;
 
+    @Getter
+    @Setter
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private JwtSecretKey secretKey;
+
     public void login(){
         this.setLogin(true);
     }

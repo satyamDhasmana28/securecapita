@@ -9,6 +9,6 @@ public class ApplicationConstants {
     public static final String VALIDATED = "VALIDATED";
     public static final String INVALIDATED = "INVALIDATED";
 
-    public static final String SOMETHNG_WENT_WRONG = "Something went wrong ;(";
-
+    public static final String SOMETHING_WENT_WRONG_MSG = "Something went wrong ;(";
+    public static long PASSWORD_EXPIRED_DURATION_DAYS = 60l;
 }

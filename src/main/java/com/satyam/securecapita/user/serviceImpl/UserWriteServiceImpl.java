@@ -83,6 +83,7 @@ public class UserWriteServiceImpl implements UserWriteService {
         }else {
             User user = tokenVerification.getUser();
             user.setEnabled(true);
+            user.setLastTimePasswordUpdated(LocalDateTime.now());
             this.userRepo.save(user);
         }
         return "email verification success.";

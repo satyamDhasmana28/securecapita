@@ -1,0 +1,107 @@
+package com.satyam.securecapita.infrastructure.security;
+
+import com.satyam.securecapita.user.model.JwtSecretKey;
+import com.satyam.securecapita.user.model.User;
+import com.satyam.securecapita.user.service.JwtSecretKeyRepository;
+import com.satyam.securecapita.user.serviceImpl.UserRepositoryWrapper;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.function.Function;
+
+/*
+*  this is jwt util used in token based authorisation.
+* 1) it generates token and sign it with secret key
+* 2) it verifies the token
+*
+* */
+@Service
+public class JwtUtil {
+
+    private final UserDetailsService userDetailsService;
+    private final JwtSecretKeyRepository jwtSecretKeyRepository;
+    private final UserRepositoryWrapper userRepositoryWrapper;
+    private static final long TOKEN_EXPIRATION_MILLIS = 1000*60*60*24*7; // 7 days
+
+    @Autowired
+    public JwtUtil(UserDetailsService userDetailsService, JwtSecretKeyRepository jwtSecretKeyRepository, UserRepositoryWrapper userRepositoryWrapper) {
+        this.userDetailsService = userDetailsService;
+        this.jwtSecretKeyRepository = jwtSecretKeyRepository;
+        this.userRepositoryWrapper = userRepositoryWrapper;
+    }
+
+
+//    method will be called after authenticate method of ProviderManager
+    public String generateToken(String username, List<String> roles){
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles",roles);
+        return createToken(username, claims);
+    }
+
+    private String createToken(String subject, Map<String, Object> claims) {
+        String secretSigningKey = generateSecretKey(); //secret signing key
+        User user = this.userRepositoryWrapper.findByEmailId(subject).get();
+        JwtSecretKey jsk = JwtSecretKey.builder().user(user).secretKey(secretSigningKey).build();
+        user.setSecretKey(jsk);
+        this.userRepositoryWrapper.saveAndFlush(user);
+        return Jwts.builder().
+                setSubject(subject).
+                setClaims(claims).
+                setIssuedAt(new Date()).
+                setExpiration(new Date(System.currentTimeMillis()+TOKEN_EXPIRATION_MILLIS)).
+                signWith(SignatureAlgorithm.HS256,secretSigningKey).
+                compact();
+    }
+
+    public Claims extractAllClaims(String token){ //throws exception
+        String secretKey = ((ApplicationUserDetailsService)userDetailsService).getUser().getSecretKey().getSecretKey();
+        JwtParser parser = Jwts.parser();  // Get the JwtParser
+        return parser
+                .setSigningKey(secretKey)  // Set the secret key used to sign the token
+                .parseClaimsJws(token)     // Parse the token and get the claims
+                .getBody();
+    }
+    public <R> R extractClaims(String token, Function<Claims,R> claimsResolver){
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    public String extractUserEmailId(String token){
+        return extractClaims(token, Claims::getSubject);
+    }
+
+    public Date extractExpiration(String token){
+        return extractClaims(token,Claims::getExpiration);
+    }
+
+    private boolean isTokenExpired(String token){
+        return this.extractExpiration(token).before(new Date());
+    }
+
+    public boolean validateToken(String token , UserDetails userDetails){
+        final String username = extractUserEmailId(token); //email
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    private String generateSecretKey()  {
+        KeyGenerator keyGen = null;
+        try {
+            keyGen = KeyGenerator.getInstance("HmacSHA256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+        keyGen.init(256); // for HMAC-SHA256
+        SecretKey secretKey = keyGen.generateKey();
+        return Base64.getEncoder().encodeToString(secretKey.getEncoded());
+    }
+}

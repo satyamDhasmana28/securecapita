@@ -29,4 +29,7 @@ public class UserRepositoryWrapper {
         return this.repo.findByEmailIdIgnoreCase(email);
     }
 
+    public void saveAndFlush(User user) {
+        this.repo.saveAndFlush(user);
+    }
 }

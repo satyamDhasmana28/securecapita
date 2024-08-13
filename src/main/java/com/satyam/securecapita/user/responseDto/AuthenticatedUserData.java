@@ -11,15 +11,16 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 public class AuthenticatedUserData {
-    private String errorMessage;
-    private String username; //email id
+    private Long userId; // primary key in table
+    private String username; // email id
     private String password;
     private String firstName;
     private String lastName;
     private LocalDateTime lastTimePasswordUpdated;
     private boolean isLogin;
-    private boolean enabled; //eamil verification
+    private boolean enabled; // email verification
     private LocalDateTime lastLoginFailed;
     private Set<String> roles;
+    private String bearerToken; // jwt
 
 }
