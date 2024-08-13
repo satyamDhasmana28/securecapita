@@ -23,8 +23,8 @@ import java.util.Objects;
 @Service
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
+    //cant be used here
     private final UserDetailsService userDetailsService;
-
     private String username;
 
     @Autowired

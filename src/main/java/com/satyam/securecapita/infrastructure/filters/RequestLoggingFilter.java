@@ -21,47 +21,45 @@ public class RequestLoggingFilter implements Filter{
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper((HttpServletRequest) request);
-        ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper((HttpServletResponse) response);
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        // Log request details
-        logRequestDetails(wrappedRequest);
+        String dateTime = LocalDateTime.now().format(dateTimeFormatter);
+        String method = httpRequest.getMethod();
+        String url = httpRequest.getRequestURL().toString();
 
-        // Proceed with the filter chain
-        chain.doFilter(wrappedRequest, wrappedResponse);
+        // Log the request details
+        logger.info(dateTime + " " + method + " " + url);
 
-        // Log response details after the chain
-//        logResponseDetails(wrappedResponse);
-
-        // Copy the cached response body back to the response
-        wrappedResponse.copyBodyToResponse();
+        // Pass the request down the chain
+        chain.doFilter(request, response);
     }
 
-    private void logRequestDetails(ContentCachingRequestWrapper request){
-        if(request.getRequestURI().startsWith(ApplicationConstants.BASE_PATH)){
-            String dateTime = LocalDateTime.now().format(dateTimeFormatter);
-            String methodType = request.getMethod();
-            String url = request.getRequestURL().toString();
-
-            logger.info("{} {} {}", dateTime, methodType, url);
-        }
+//    private void logRequestDetails(ContentCachingRequestWrapper request){
+//        if(request.getRequestURI().startsWith(ApplicationConstants.BASE_PATH)){
+//            String dateTime = LocalDateTime.now().format(dateTimeFormatter);
+//            String methodType = request.getMethod();
+//            String url = request.getRequestURL().toString();
+//
+//            logger.info("{} {} {}", dateTime, methodType, url);
+//        }
 
         // Log request body (if any)
 //        byte[] requestBody = request.getContentAsByteArray();
 //        if (requestBody.length > 0) {
 //            logger.info("Request Body: {}", new String(requestBody, request.getCharacterEncoding()));
 //        }
-    }
+//    }
 
-    private void logResponseDetails(ContentCachingResponseWrapper response) throws UnsupportedEncodingException {
-        logger.info("Response Status: {}", response.getStatus());
-
-        // Log response body (if any)
-        byte[] responseBody = response.getContentAsByteArray();
-        if (responseBody.length > 0) {
-            logger.info("Response Body: {}", new String(responseBody, response.getCharacterEncoding()));
-        }
-    }
+//    private void logResponseDetails(ContentCachingResponseWrapper response) throws UnsupportedEncodingException {
+//        logger.info("Response Status: {}", response.getStatus());
+//
+//        // Log response body (if any)
+//        byte[] responseBody = response.getContentAsByteArray();
+//        if (responseBody.length > 0) {
+//            logger.info("Response Body: {}", new String(responseBody, response.getCharacterEncoding()));
+//        }
+//    }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

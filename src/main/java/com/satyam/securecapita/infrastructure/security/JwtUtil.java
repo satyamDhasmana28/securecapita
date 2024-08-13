@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.transaction.Transactional;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.Function;
@@ -51,19 +52,26 @@ public class JwtUtil {
     private String createToken(String subject, Map<String, Object> claims) {
         String secretSigningKey = generateSecretKey(); //secret signing key
         User user = this.userRepositoryWrapper.findByEmailId(subject).get();
-        JwtSecretKey jsk = JwtSecretKey.builder().user(user).secretKey(secretSigningKey).build();
-        user.setSecretKey(jsk);
-        this.userRepositoryWrapper.saveAndFlush(user);
+        if(Objects.isNull(user.getSecretKey())){ // if no corresponding JwtSecretKey found
+            JwtSecretKey jsk = JwtSecretKey.builder().user(user).secretKey(secretSigningKey).build();
+            user.setSecretKey(jsk);
+            this.userRepositoryWrapper.saveAndFlush(user);
+        } else{ // update the secretSigningKey
+            user.getSecretKey().setSecretKey(secretSigningKey);
+            this.userRepositoryWrapper.saveAndFlush(user);
+        }
         return Jwts.builder().
-                setSubject(subject).
                 setClaims(claims).
+                setSubject(subject).
                 setIssuedAt(new Date()).
                 setExpiration(new Date(System.currentTimeMillis()+TOKEN_EXPIRATION_MILLIS)).
                 signWith(SignatureAlgorithm.HS256,secretSigningKey).
                 compact();
     }
 
+    @Transactional
     public Claims extractAllClaims(String token){ //throws exception
+        //have to work on this as it returns null
         String secretKey = ((ApplicationUserDetailsService)userDetailsService).getUser().getSecretKey().getSecretKey();
         JwtParser parser = Jwts.parser();  // Get the JwtParser
         return parser
@@ -73,7 +81,9 @@ public class JwtUtil {
     }
     public <R> R extractClaims(String token, Function<Claims,R> claimsResolver){
         final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        R data = claimsResolver.apply(claims);
+        System.out.println(data);
+        return data;
     }
 
     public String extractUserEmailId(String token){

@@ -46,7 +46,7 @@ public class SecurityConfig  /*extends WebSecurityConfigurerAdapter*/ {
                         .anyRequest().hasAuthority("ROLE_SUPER_USER")  // SuperUser access
                 ).addFilterBefore(new RequestLoggingFilter(), UsernamePasswordAuthenticationFilter.class). // request logging filter
                 addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt logging filter
-                .formLogin(withDefaults())  // Default login form
+//                .formLogin(withDefaults())  // Default login form
                 .userDetailsService(userDetailsService)
                 .build();
     }
