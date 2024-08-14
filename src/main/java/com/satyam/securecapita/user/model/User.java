@@ -74,7 +74,7 @@ public class User implements UserDetails {
 
     @Getter
     @Setter
-    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private JwtSecretKey secretKey;
 
     public void login(){

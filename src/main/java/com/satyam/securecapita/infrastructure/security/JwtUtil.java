@@ -72,7 +72,8 @@ public class JwtUtil {
     @Transactional
     public Claims extractAllClaims(String token){ //throws exception
         //have to work on this as it returns null
-        String secretKey = ((ApplicationUserDetailsService)userDetailsService).getUser().getSecretKey().getSecretKey();
+//        System.out.println(useremail);
+//        String secretKey = this.us;
         JwtParser parser = Jwts.parser();  // Get the JwtParser
         return parser
                 .setSigningKey(secretKey)  // Set the secret key used to sign the token
@@ -99,7 +100,7 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token , UserDetails userDetails){
-        final String username = extractUserEmailId(token); //email
+        final String username = extractUserEmailId(token); // email
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 

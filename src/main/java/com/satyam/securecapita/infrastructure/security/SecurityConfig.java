@@ -14,8 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig  /*extends WebSecurityConfigurerAdapter*/ {
@@ -45,7 +43,7 @@ public class SecurityConfig  /*extends WebSecurityConfigurerAdapter*/ {
                         .antMatchers("/securecapita/api/v1/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")  // Role-based APIs
                         .anyRequest().hasAuthority("ROLE_SUPER_USER")  // SuperUser access
                 ).addFilterBefore(new RequestLoggingFilter(), UsernamePasswordAuthenticationFilter.class). // request logging filter
-                addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt logging filter
+                addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt logging filter
 //                .formLogin(withDefaults())  // Default login form
                 .userDetailsService(userDetailsService)
                 .build();
