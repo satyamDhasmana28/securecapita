@@ -4,10 +4,9 @@ import com.satyam.securecapita.user.model.JwtSecretKey;
 import com.satyam.securecapita.user.model.User;
 import com.satyam.securecapita.user.service.JwtSecretKeyRepository;
 import com.satyam.securecapita.user.serviceImpl.UserRepositoryWrapper;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.DefaultJwtParser;
+import io.jsonwebtoken.impl.TextCodec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -52,7 +51,7 @@ public class JwtUtil {
     private String createToken(String subject, Map<String, Object> claims) {
         String secretSigningKey = generateSecretKey(); //secret signing key
         User user = this.userRepositoryWrapper.findByEmailId(subject).get();
-        if(Objects.isNull(user.getSecretKey())){ // if no corresponding JwtSecretKey found
+        if(Objects.isNull(user.getSecretKey())){ // if no corresponding JwtSecretKey(signing key) found
             JwtSecretKey jsk = JwtSecretKey.builder().user(user).secretKey(secretSigningKey).build();
             user.setSecretKey(jsk);
             this.userRepositoryWrapper.saveAndFlush(user);
@@ -71,9 +70,9 @@ public class JwtUtil {
 
     @Transactional
     public Claims extractAllClaims(String token){ //throws exception
-        //have to work on this as it returns null
-//        System.out.println(useremail);
-//        String secretKey = this.us;
+        //how to get user secret key without getting User entity obj
+        String username = extractUserEmailIdWithoutValidation(token);
+        String secretKey = this.userRepositoryWrapper.findByEmailId(username).get().getSecretKey().getSecretKey();
         JwtParser parser = Jwts.parser();  // Get the JwtParser
         return parser
                 .setSigningKey(secretKey)  // Set the secret key used to sign the token
@@ -89,6 +88,18 @@ public class JwtUtil {
 
     public String extractUserEmailId(String token){
         return extractClaims(token, Claims::getSubject);
+    }
+    private String extractUserEmailIdWithoutValidation(String token) {
+        String[] tokenParts = token.split("\\.");
+        String base64EncodedPayload = tokenParts[1]; // The payload part of the token
+        String payload = TextCodec.BASE64URL.decodeToString(base64EncodedPayload);
+
+        JwtParser parser = new DefaultJwtParser();
+        // Parse the JSON payload into Claims
+        Claims claims = Jwts.parser()
+                .parseClaimsJwt(tokenParts[0] + "." + tokenParts[1] + ".") // Parsing only header and payload
+                .getBody();
+        return claims.getSubject(); // getting username or email
     }
 
     public Date extractExpiration(String token){
