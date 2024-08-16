@@ -77,6 +77,11 @@ public class User implements UserDetails {
     @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private JwtSecretKey secretKey;
 
+    @Column(name = "is_two_factor_enabled",columnDefinition = "boolean default false")
+    @Getter
+    @Setter
+    private boolean twoFactorEnabled;
+
     public void login(){
         this.setLogin(true);
     }

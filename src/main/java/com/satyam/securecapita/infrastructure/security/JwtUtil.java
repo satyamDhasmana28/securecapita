@@ -70,7 +70,7 @@ public class JwtUtil {
 
     @Transactional
     public Claims extractAllClaims(String token){ //throws exception
-        //how to get user secret key without getting User entity obj
+        //extract sub(username or email) from the claims
         String username = extractUserEmailIdWithoutValidation(token);
         String secretKey = this.userRepositoryWrapper.findByEmailId(username).get().getSecretKey().getSecretKey();
         JwtParser parser = Jwts.parser();  // Get the JwtParser
@@ -91,10 +91,10 @@ public class JwtUtil {
     }
     private String extractUserEmailIdWithoutValidation(String token) {
         String[] tokenParts = token.split("\\.");
-        String base64EncodedPayload = tokenParts[1]; // The payload part of the token
-        String payload = TextCodec.BASE64URL.decodeToString(base64EncodedPayload);
+//        String base64EncodedPayload = tokenParts[1]; // The payload part of the token
+//        String payload = TextCodec.BASE64URL.decodeToString(base64EncodedPayload);
 
-        JwtParser parser = new DefaultJwtParser();
+//        JwtParser parser = new DefaultJwtParser();
         // Parse the JSON payload into Claims
         Claims claims = Jwts.parser()
                 .parseClaimsJwt(tokenParts[0] + "." + tokenParts[1] + ".") // Parsing only header and payload
