@@ -68,7 +68,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             String bearerToken = this.jwtUtil.generateToken(username,roles);
             authenticatedUserData = AuthenticatedUserData.builder().userId(user.getId()).username(user.getEmailId()).
                     firstName(user.getFirstName()).lastName(user.getLastName()).lastTimePasswordUpdated(user.getLastTimePasswordUpdated()).
-                    password(null).roles(new HashSet<>(roles)).bearerToken(bearerToken).build();
+                    password(null).roles(new HashSet<>(roles)).bearerToken(bearerToken).twoFactorEnabled(user.isTwoFactorEnabled()).build();
         }
         return authenticatedUserData;
     }

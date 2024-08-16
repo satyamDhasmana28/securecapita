@@ -82,6 +82,11 @@ public class User implements UserDetails {
     @Setter
     private boolean twoFactorEnabled;
 
+    @Getter
+    @Setter
+    @Column(name = "mobile_no")
+    private String mobileNumber;
+
     public void login(){
         this.setLogin(true);
     }

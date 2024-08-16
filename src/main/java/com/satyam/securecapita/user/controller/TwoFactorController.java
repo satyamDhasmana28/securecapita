@@ -3,13 +3,13 @@ package com.satyam.securecapita.user.controller;
 import com.satyam.securecapita.infrastructure.constants.ApplicationConstants;
 import com.satyam.securecapita.infrastructure.data.ApplicationResponse;
 import com.satyam.securecapita.infrastructure.security.CustomSecurityContext;
+import com.satyam.securecapita.infrastructure.service.NotificationService;
 import com.satyam.securecapita.user.model.User;
-import com.satyam.securecapita.user.service.UserRepository;
 import com.satyam.securecapita.user.serviceImpl.UserRepositoryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,11 +20,14 @@ public class TwoFactorController {
 
     private final CustomSecurityContext context;
     private final UserRepositoryWrapper userRepositoryWrapper;
+    private final NotificationService mobileSmsService;
 
     @Autowired
-    public TwoFactorController(CustomSecurityContext context, UserRepositoryWrapper userRepositoryWrapper) {
+    public TwoFactorController(CustomSecurityContext context, UserRepositoryWrapper userRepositoryWrapper,
+                               @Qualifier("mobileSmsServiceImpl")NotificationService mobileSmsService) {
         this.context = context;
         this.userRepositoryWrapper = userRepositoryWrapper;
+        this.mobileSmsService = mobileSmsService;
     }
 
     @RequestMapping(value = "toggle", method = RequestMethod.POST)
@@ -42,4 +45,15 @@ public class TwoFactorController {
         this.userRepositoryWrapper.saveAndFlush(user);
         return new ResponseEntity<>(ApplicationResponse.getSuccessResponse(null,200,message), HttpStatus.OK);
     }
+
+    @RequestMapping(value = "sendOtp", method = RequestMethod.POST)
+    public ResponseEntity<ApplicationResponse<String>> sendTwoFactorToken(){
+        try{
+
+
+        } catch(Exception e){
+
+        }
+    }
+
 }

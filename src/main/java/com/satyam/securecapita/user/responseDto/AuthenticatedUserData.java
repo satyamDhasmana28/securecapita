@@ -22,5 +22,6 @@ public class AuthenticatedUserData {
     private LocalDateTime lastLoginFailed;
     private Set<String> roles;
     private String bearerToken; // jwt
+    private boolean twoFactorEnabled;
 
 }
