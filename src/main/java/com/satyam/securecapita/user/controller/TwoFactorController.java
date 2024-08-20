@@ -50,7 +50,6 @@ public class TwoFactorController {
     public ResponseEntity<ApplicationResponse<String>> sendTwoFactorToken(){
         try{
 
-
         } catch(Exception e){
 
         }
