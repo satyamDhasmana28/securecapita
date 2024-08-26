@@ -1,5 +1,6 @@
 package com.satyam.securecapita.user.model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

@@ -1,12 +1,20 @@
 package com.satyam.securecapita.infrastructure.service;
 
+import com.satyam.securecapita.infrastructure.constants.ApplicationConstants;
+import com.satyam.securecapita.infrastructure.constants.ApplicationUtil;
+import com.satyam.securecapita.infrastructure.constants.MessageTemplateEnum;
 import com.satyam.securecapita.infrastructure.constants.TwilioConfig;
-import com.satyam.securecapita.infrastructure.security.CustomSecurityContext;
+import com.satyam.securecapita.infrastructure.data.SmsSendingPojo;
+import com.satyam.securecapita.infrastructure.message.MessageTemplate;
+import com.satyam.securecapita.infrastructure.message.MessageTemplateRepository;
+import com.satyam.securecapita.infrastructure.message.MessageTemplateService;
 import com.satyam.securecapita.user.Exception.ApplicationException;
+import com.satyam.securecapita.user.model.OtpToken;
 import com.satyam.securecapita.user.model.User;
 import com.satyam.securecapita.user.service.OtpTokenRepository;
-import com.twilio.Twilio;
+import com.satyam.securecapita.user.serviceImpl.UserRepositoryWrapper;
 
+import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
 import lombok.extern.slf4j.Slf4j;
@@ -14,39 +22,79 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import javax.transaction.Transactional;
+import java.util.Map;
 
 @Slf4j
 @Service
 @Qualifier("mobileSmsServiceImpl")
-public class MobileSmsServiceImpl implements NotificationService{
+public class MobileSmsServiceImpl implements SmsService {
 
     private final TwilioConfig twilioConfig;
     private final OtpTokenRepository otpRepo;
-    private final CustomSecurityContext context;
+    private final UserRepositoryWrapper userRepositoryWrapper;
+    private final MessageTemplateRepository smsTemplateRepo;
+    private final MessageTemplateService messageTemplateService;
+
     @Autowired
-    public MobileSmsServiceImpl(TwilioConfig twilioConfig, OtpTokenRepository otpRepo, CustomSecurityContext context) {
+    public MobileSmsServiceImpl(TwilioConfig twilioConfig, OtpTokenRepository otpRepo, UserRepositoryWrapper userRepositoryWrapper, MessageTemplateRepository smsTemplateRepo, MessageTemplateService messageTemplateService) {
         this.twilioConfig = twilioConfig;
         this.otpRepo = otpRepo;
-        this.context = context;
+        this.userRepositoryWrapper = userRepositoryWrapper;
+        this.smsTemplateRepo = smsTemplateRepo;
+        this.messageTemplateService = messageTemplateService;
     }
 
+    /*
+    *  if message is SUCCESS then we get reqId for otp validation
+    *  else error.
+    * */
+    @Transactional
     @Override
-    public boolean sendMessage(String message, String destination) {
-        boolean isOtpSend = false;
-        try {
-//          send message to customer customer
-            final User user = this.context.getAuthenticatedUser();
-            String mobNo = user.getMobileNumber();
-            if(Objects.isNull(mobNo) || mobNo.length()!=10){
-                throw new ApplicationException("mobile number not available");
-            }
-            Twilio.init(this.twilioConfig.getAccountSid(),this.twilioConfig.getAuthToken());
-            Message.creator(new PhoneNumber(destination),new PhoneNumber(this.twilioConfig.getPhoneNumber()),message).create();
-            isOtpSend = true;
-        } catch (Exception e){
-            throw new ApplicationException(e.getMessage());
+    public SmsSendingPojo sendMessage(User user, MessageTemplateEnum templateEnum, Map<String, String> placeholder) {
+        SmsSendingPojo responseObj = new SmsSendingPojo("Issue in sending sms.",null);
+        String mobileNo = user.getMobileNumber();
+        String templateName = templateEnum.getTemplateName();
+        if(mobileNo.isBlank() || mobileNo.length()!=10)
+            throw new ApplicationException("mobile number unavailable.");
+        final MessageTemplate messageTemplateObj =this.smsTemplateRepo.findByTemplateNameIgnoreCase(templateName).
+                filter(messageTemplate -> messageTemplate.isAuthorised()&&!messageTemplate.getMessageTemplate().isBlank()).
+                orElseThrow(() ->  new ApplicationException("Message Template for '"+templateName+"' is either not available or not authorised."));
+        String message = this.messageTemplateService.getProcessMessage(messageTemplateObj.getMessageTemplate(),placeholder);
+//        save in db
+        if(templateEnum.isOtpPurpose()){
+            String otp = ApplicationUtil.generateOtp(ApplicationConstants.OPT_LEN);
+            OtpToken otpToken= new OtpToken(otp,user.getId(),templateEnum.getTemplateName());
+            message = message.replace("{otp}", otp).
+                    replace("{otpValidity}",String.valueOf(ApplicationConstants.OTP_VALIDITY));
+            Long reqId = this.otpRepo.save(otpToken).getId();
+            responseObj.setRequestId(reqId.toString());
         }
-        return isOtpSend;
+        try{
+            Twilio.init(this.twilioConfig.getAccountSid(), this.twilioConfig.getAuthToken());
+            Message.creator(new PhoneNumber(mobileNo), new PhoneNumber(this.twilioConfig.getPhoneNumber()), message).create();
+            responseObj.setMessage("SUCCESS");
+        } catch (Exception e){
+            log.error("Excepting in sending sms :"+e.getMessage());
+        }
+        return responseObj;
     }
+
+    //    @Override
+//    @Transactional
+//    public boolean sendMessage(String message, String destination) {
+//        boolean isOtpSend = false;
+//        try {
+////            save the OTP in db
+////            send otp
+//            Twilio.init(this.twilioConfig.getAccountSid(),this.twilioConfig.getAuthToken());
+//            Message.creator(new PhoneNumber(destination),new PhoneNumber(this.twilioConfig.getPhoneNumber()),message).create();
+//            isOtpSend = true;
+//        } catch (Exception e){
+//            throw new ApplicationException(e.getMessage());
+//        }
+//        return isOtpSend;
+//    }
+
+    private boolean saveOtpToken(){}
 }

@@ -16,13 +16,11 @@ public class MessageTemplateServiceImpl implements MessageTemplateService{
     }
 
     @Override
-    public String getProcessMessage(String templateName, Map<String, String> placeHolders) {
-        MessageTemplate messageTemplate =this.messageTemplateRepository.findByTemplateNameIgnoreCase(templateName).filter((obj)->obj.isAuthorised()).
-                orElseThrow(() -> new ApplicationException(templateName + " is either not available or not authorized."));
-
-        String msgTemp = messageTemplate.getMessageTemplate();
-
-        for(Map.Entry entry:placeHolders)
-
+    public String getProcessMessage(String templateMessage, Map<String, String> placeHolders) {
+        String processedMsg=null;
+        for(Map.Entry<String,String> entry:placeHolders.entrySet()){
+            processedMsg = templateMessage.replace("{"+entry.getKey()+"}",entry.getValue());
+        }
+        return processedMsg;
     }
 }
