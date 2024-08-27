@@ -61,7 +61,7 @@ public class User implements UserDetails {
     private boolean isLogin;
 
     @Setter
-    @Column(name = "credentials_non_expired")
+    @Column(name = "credentials_non_expired", columnDefinition = "boolean default true")
     private boolean credentialsNonExpired;
 
     @Setter
@@ -112,12 +112,12 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     public boolean addRole(Role role){

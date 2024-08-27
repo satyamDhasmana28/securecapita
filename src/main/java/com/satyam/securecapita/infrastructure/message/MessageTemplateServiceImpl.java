@@ -1,6 +1,5 @@
 package com.satyam.securecapita.infrastructure.message;
 
-import com.satyam.securecapita.user.Exception.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +16,7 @@ public class MessageTemplateServiceImpl implements MessageTemplateService{
 
     @Override
     public String getProcessMessage(String templateMessage, Map<String, String> placeHolders) {
-        String processedMsg=null;
+        String processedMsg=templateMessage;
         for(Map.Entry<String,String> entry:placeHolders.entrySet()){
             processedMsg = templateMessage.replace("{"+entry.getKey()+"}",entry.getValue());
         }

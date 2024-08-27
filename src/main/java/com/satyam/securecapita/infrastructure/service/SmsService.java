@@ -8,4 +8,6 @@ import java.util.Map;
 
 public interface SmsService {
     SmsSendingPojo sendMessage(User user, MessageTemplateEnum templateEnum, Map<String,String> placeholder);
+
+    String validateOtpToken(Long reqId, String otp);
 }

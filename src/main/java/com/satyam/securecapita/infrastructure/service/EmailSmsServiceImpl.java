@@ -15,4 +15,9 @@ public class EmailSmsServiceImpl implements SmsService {
     public SmsSendingPojo sendMessage(User user, MessageTemplateEnum templateEnum, Map<String, String> placeholder) {
         return null;
     }
+
+    @Override
+    public String validateOtpToken(Long reqId, String otp) {
+        return null;
+    }
 }

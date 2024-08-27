@@ -5,7 +5,7 @@ spring:
   application:
     name: securecapita
   datasource:
-    url: jdbc:mysql://database-1.c90s04geo96p.eu-north-1.rds.amazonaws.com:3306/securecapital
+    url: jdbc:mysql://database-1.ctg0g040g5is.ap-south-1.rds.amazonaws.com:3306/securecapital
     username: admin
     password: 9871682353
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -1,6 +1,6 @@
 package com.satyam.securecapita.user.model;
 
-import lombok.Builder;
+import com.satyam.securecapita.infrastructure.constants.ApplicationConstants;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -40,7 +40,15 @@ public class OtpToken {
         this.userId =userId;
         this.purpose =purpose;
         this.otpGenerationDateTime =localDateTime;
-        this.OtpExpirationDateTime =localDateTime.plus(15, ChronoUnit.MINUTES);
+        this.OtpExpirationDateTime =localDateTime.plus(ApplicationConstants.OTP_VALIDITY, ChronoUnit.MINUTES);
+    }
+
+    public void wrongOtpAttempt(){
+        this.failedAttemptCount++;
+    }
+
+    public boolean isOtpExpired(){
+        return this.OtpExpirationDateTime.isBefore(LocalDateTime.now());
     }
 
 }

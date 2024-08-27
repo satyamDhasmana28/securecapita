@@ -67,7 +67,7 @@ public class UserRegistrationCompleteEventListener implements ApplicationListene
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
             helper.setFrom(supportGmail,"Secure Capital");
-            helper.setTo(user.getEmailId()); // receiver emaid id
+            helper.setTo(user.getEmailId()); // receiver email id
             helper.setSubject(subject);
             helper.setText(message, true); // The second argument indicates that the content is HTML
 

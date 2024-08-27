@@ -11,6 +11,9 @@ public class ApplicationConstants {
 
     public static final String SOMETHING_WENT_WRONG_MSG = "Something went wrong ;(";
     public static long PASSWORD_EXPIRED_DURATION_DAYS = 60l;
+
+//    Otp related constants
     public static final int OPT_LEN=4;
-    public static final int OTP_VALIDITY=15;
+    public static final int OTP_VALIDITY=5;
+    public static final int OTP_ATTEMPT_COUNT = 3;
 }
