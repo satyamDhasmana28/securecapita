@@ -52,6 +52,8 @@ public class MobileSmsServiceImpl implements SmsService {
     @Transactional
     @Override
     public SmsSendingPojo sendMessage(User user, MessageTemplateEnum templateEnum, Map<String, String> placeholder) {
+        log.error(this.twilioConfig.toString());
+
         SmsSendingPojo responseObj = new SmsSendingPojo("Issue in sending sms.", null);
         String mobileNo = user.getMobileNumber();
         String templateName = templateEnum.getTemplateName();
@@ -74,6 +76,7 @@ public class MobileSmsServiceImpl implements SmsService {
             Twilio.init(this.twilioConfig.getAccountSid(), this.twilioConfig.getAuthToken());
             Message.creator(new PhoneNumber("+91" + mobileNo), new PhoneNumber(this.twilioConfig.getPhoneNumber()), message).create();
             responseObj.setMessage(ApplicationConstants.SUCCESS);
+            log.error("sms sent to {} :{}",mobileNo,message);
         } catch (Exception e) {
             log.error("Excepting in sending sms :" + e.getMessage());
             throw new RuntimeException("error in sending sms.");
