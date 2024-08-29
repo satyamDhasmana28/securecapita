@@ -5,7 +5,8 @@ package com.satyam.securecapita.infrastructure.constants;
  * different purpose
 *********************************************/
 public enum MessageTemplateEnum {
-    TWO_FACTOR("2FA",true);
+    TWO_FACTOR("2FA",true),
+    FORGOT_PASSWORD("FORGOT PASSWORD",true);
 
     private String templateName;
     private boolean isOtpPurpose;

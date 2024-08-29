@@ -1,6 +1,8 @@
 package com.satyam.securecapita.infrastructure.filters;
 
+import com.google.gson.Gson;
 import com.satyam.securecapita.infrastructure.constants.ApplicationConstants;
+import com.satyam.securecapita.infrastructure.data.ApplicationResponse;
 import com.satyam.securecapita.infrastructure.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,6 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     } else {
+                        System.out.println("Jwt token invalid or expired");
                         sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token invalid or expired.");
                         return;
                     }
@@ -61,6 +64,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
             } else {
                 sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Bearer token in missing.");
+                return;
             }
         }
         filterChain.doFilter(request, response);
@@ -69,7 +73,8 @@ public class JwtFilter extends OncePerRequestFilter {
     private void sendErrorResponse(HttpServletResponse response, int statusCode, String message) throws IOException {
         response.setStatus(statusCode);
         response.setContentType("application/json");
-        response.getWriter().write("{\"statusCode\":\"" + statusCode + "\",\"message\":\"" + message + "\"}");
+        String message1 = new Gson().toJson(ApplicationResponse.getFailureResponse("UNAUTHORIZED",statusCode,message));
+        response.getWriter().write(message1);
     }
 
     private static List<String> nonTokenService() {
@@ -77,7 +82,7 @@ public class JwtFilter extends OncePerRequestFilter {
         nonTokenBasedService.add("/register");
         nonTokenBasedService.add("/register/verifyEmail");// token is generated in the login process
         nonTokenBasedService.add("/authenticate");
-//        nonTokenBasedService.add("/users/forget-password-change");
+        nonTokenBasedService.add("/forgot/password");
         return nonTokenBasedService;
     }
 }

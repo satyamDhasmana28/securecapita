@@ -1,6 +1,6 @@
 package com.satyam.securecapita.user.serviceImpl;
 
-import com.satyam.securecapita.user.Exception.UserAlreadyRegisteredException;
+import com.satyam.securecapita.user.Exception.ApplicationException;
 import com.satyam.securecapita.user.model.User;
 import com.satyam.securecapita.user.service.TokenVerificationRepository;
 import com.satyam.securecapita.user.service.UserReadService;
@@ -32,4 +32,15 @@ public class UserReadServiceImpl implements UserReadService {
     public boolean isUserEmailVerified(String username) {
         return this.userRepositoryWrapper.findByEmailId(username).get().isEnabled();
     }
+
+    //should throw exception in case user email not verified.
+    @Override
+    public User getUserByUsername(String username) {
+        return this.userRepositoryWrapper.findByEmailId(username).map(user -> {
+            if (!user.isEnabled())
+                throw new ApplicationException("USer is not enabled yet. verify your email id.");
+            return user;
+        }).orElseThrow(() -> new ApplicationException("User not found with username :" + username));
+    }
+
 }
