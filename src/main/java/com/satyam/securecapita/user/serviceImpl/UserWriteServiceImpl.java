@@ -88,4 +88,9 @@ public class UserWriteServiceImpl implements UserWriteService {
         }
         return "email verification success.";
     }
+
+    @Override
+    public void saveUser(User user) {
+        this.userRepo.save(user);
+    }
 }

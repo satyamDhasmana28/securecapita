@@ -38,7 +38,7 @@ public class SecurityConfig  /*extends WebSecurityConfigurerAdapter*/ {
                 .csrf().disable()  // Disabling CSRF (Enable it if needed)
                 .cors().disable()  // Disabling CORS (Enable it if needed)
                 .authorizeRequests(authorize -> authorize
-                        .antMatchers("/securecapita/api/v1/register/**", "/securecapita/api/v1/forgot/**").permitAll()  // Public APIs
+                        .antMatchers("/securecapita/api/v1/register/**", "/securecapita/api/v1/forgot/**","/securecapita/api/v1/say").permitAll()  // Public APIs
                         .antMatchers("/securecapita/api/v1/authenticate/**").permitAll()
                         .antMatchers("/securecapita/api/v1/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")  // Role-based APIs
                         .anyRequest().hasAuthority("ROLE_SUPER_USER")  // SuperUser access

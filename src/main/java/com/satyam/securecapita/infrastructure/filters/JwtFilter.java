@@ -83,6 +83,7 @@ public class JwtFilter extends OncePerRequestFilter {
         nonTokenBasedService.add("/register/verifyEmail");// token is generated in the login process
         nonTokenBasedService.add("/authenticate");
         nonTokenBasedService.add("/forgot/password");
+        nonTokenBasedService.add("/say");
         return nonTokenBasedService;
     }
 }

@@ -16,6 +16,9 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+  redis:
+    host: ec2-13-235-247-221.ap-south-1.compute.amazonaws.com
+    port: 6379
 #    properties:
 #      hibernate:
 #        dialect: org.hibernate.dialect.MySQL8Dialect

@@ -8,4 +8,6 @@ public interface UserWriteService {
     public User doUserRegisteration(UserRegistrationRequestDto requestDto) throws UserAlreadyRegisteredException;
 
     String verifyEmailUsingToken(String token);
+
+    void saveUser(User user);
 }
