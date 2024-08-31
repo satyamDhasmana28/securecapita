@@ -80,4 +80,8 @@ public class UserRecoveryController {
         return new ResponseEntity<>(ApplicationResponse.getSuccessResponse(null,HttpStatus.OK.value(),"Password changes succesfully."),HttpStatus.OK);
     }
 
+    @PostMapping("/username/{registeredPhoneNumber}")
+    public ResponseEntity<ApplicationResponse<String>> retrieveForgotUsername(@RequestBody ChangePasswordRequestDto dto){
+
+    }
 }
