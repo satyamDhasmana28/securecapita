@@ -3,6 +3,7 @@ package com.satyam.securecapita.user.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -12,7 +13,7 @@ import java.time.temporal.ChronoUnit;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TokenVerification {
+public class TokenVerification implements Serializable {
     private static final long TOKEN_EXPIRATION_TIME = 60 ; //  60 minute
 
     @Id

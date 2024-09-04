@@ -82,6 +82,6 @@ public class UserRecoveryController {
 
     @PostMapping("/username/{registeredPhoneNumber}")
     public ResponseEntity<ApplicationResponse<String>> retrieveForgotUsername(@RequestBody ChangePasswordRequestDto dto){
-
+        return null;
     }
 }

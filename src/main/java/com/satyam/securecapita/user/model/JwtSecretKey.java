@@ -3,6 +3,7 @@ package com.satyam.securecapita.user.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity(name = "m_jwt_token_key")
 @Getter
@@ -10,7 +11,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class JwtSecretKey {
+public class JwtSecretKey implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -54,6 +54,7 @@ public class SecurityConfig  /*extends WebSecurityConfigurerAdapter*/ {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+
 //    @Bean
 //    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
 //        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();

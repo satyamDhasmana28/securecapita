@@ -5,13 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity(name = "m_otp_token")
 @Getter
 @NoArgsConstructor
-public class OtpToken {
+public class OtpToken implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
